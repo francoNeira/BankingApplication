@@ -1,8 +1,8 @@
 package com.bank;
 
 import com.bank.exceptions.NotEnoughBalance;
-import com.bank.model.Account;
-import com.bank.model.Cash;
+import com.bank.model.accounts.Account;
+import com.bank.model.cash.Cash;
 
 import utils.IdGenerator;
 
@@ -12,11 +12,9 @@ import java.util.NoSuchElementException;
 
 public class BankingApplication {
     private final List<Account> accounts;
-    private final IdGenerator idGenerator;
 
     public BankingApplication() {
         accounts = new ArrayList<>();
-        idGenerator = new IdGenerator();
     }
 
     // Getters
@@ -29,8 +27,7 @@ public class BankingApplication {
      *
      * @return the account created from the received customer name.
      */
-    public Integer register(String customerName) {
-        Account account = new Account(idGenerator.nextId(), customerName);
+    public Integer register(Account account) {
         accounts.add(account);
         return account.customerId();
     }
@@ -48,14 +45,9 @@ public class BankingApplication {
      * @throws NotEnoughBalance if account has not enought balance for the operation.
      */
     public void doWithdrawal(Account account, Cash cash) throws NotEnoughBalance {
-    	try {
-    		if (!accountHasNotEnoughBalance(account, cash))
-    			account.withdraw(cash);
-    	}catch(NoSuchElementException exception){
-    		throw new NotEnoughBalance();
-    	}
+    	account.withdraw(cash);
     }
-
+    
     /**
      * Returns the account corresponding to the received id.
      *
@@ -66,13 +58,4 @@ public class BankingApplication {
     }
 
     // Auxiliary methods
-
-    /**
-     * Returns true if received amount is bigger that account's balance.
-     *
-     * @return true if received amount is bigger that account's balance.
-     */
-    private boolean accountHasNotEnoughBalance(Account account, Cash cash) { 
-    		return account.searchRequiredCash(cash).getValue() < cash.getValue();
-    }
 }

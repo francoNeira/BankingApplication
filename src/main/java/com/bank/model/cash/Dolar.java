@@ -1,4 +1,4 @@
-package com.bank.model;
+package com.bank.model.cash;
 
 public class Dolar extends Cash {
 
