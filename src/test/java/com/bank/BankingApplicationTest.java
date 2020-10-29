@@ -1,15 +1,22 @@
 package com.bank;
 
-import com.bank.exceptions.NotEnoughBalance;
-import com.bank.model.Account;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import com.bank.exceptions.NotEnoughBalance;
+import com.bank.model.Account;
+import com.bank.model.Cash;
+import com.bank.model.Dolar;
+import com.bank.model.Euro;
 
 public class BankingApplicationTest {
     private BankingApplication application;
@@ -54,17 +61,19 @@ public class BankingApplicationTest {
     @Test
     public void whenAnAccountIsSearchedByIdTheApplicationFindsItAndReturnsItCorrectly() {
         Integer newId = application.register(kiritoCustomerName);
-
+        Cash cash = new Dolar(0.0, "United States");
+        
         Integer expectedId = 1;
         String expectedName = "Kirito";
-        Double expectedBalance = 0.0;
-        Double expectedPreviousTransaction = null;
+        List<Cash> expectedBalance = Arrays.asList(cash);
+        Double expectedPreviousTransaction = 0.0;
 
         Account newAccount = application.findById(newId);
-
+        newAccount.deposit(cash);
+        
         assertEquals(expectedId, newAccount.customerId());
         assertEquals(expectedName, newAccount.customerName());
-        assertEquals(expectedBalance, newAccount.balance());
+        assertEquals(expectedBalance, newAccount.balances());
         assertEquals(expectedPreviousTransaction, newAccount.previousTransaction());
     }
 
@@ -85,26 +94,28 @@ public class BankingApplicationTest {
         Integer customerId = application.register(kiritoCustomerName);
         Account account = application.findById(customerId);
 
-        Double amount = 1000.0;
-        application.doDeposit(account, amount);
+        Cash dolar = new Dolar(1000.0, "United States");
+        
+        application.doDeposit(account, dolar);
 
-        assertEquals(amount, account.balance());
-        assertEquals(amount, account.previousTransaction());
+        assertEquals(dolar.getValue(), account.searchRequiredCash(dolar).getValue());
+        assertEquals(dolar.getValue(), account.previousTransaction());
     }
 
     @Test
     public void whenAPersonDoesAWithdrawalTheApplicationUpdatesHisAccountCorrectly() {
         Integer customerId = application.register(kiritoCustomerName);
         Account account = application.findById(customerId);
-        application.doDeposit(account, 1000.0);
+        Cash dolar = new Dolar(1000.0, "United States");
+        application.doDeposit(account, dolar);
 
-        Double expectedBalance = 500.0;
+        List<Cash> expectedBalance = Arrays.asList(new Dolar(500.0, "United States"));
         Double expectedPreviousTransaction = -500.0;
 
-        Double amount = 500.0;
-        application.doWithdrawal(account, amount);
+        Cash dolarForWithdrawal = new Dolar(500.0, "United States");
+        application.doWithdrawal(account, dolarForWithdrawal);
 
-        assertEquals(expectedBalance, account.balance());
+        assertEquals(expectedBalance.size(), account.balances().size());
         assertEquals(expectedPreviousTransaction, account.previousTransaction());
     }
 
@@ -113,8 +124,8 @@ public class BankingApplicationTest {
         Integer customerId = application.register(kiritoCustomerName);
         Account account = application.findById(customerId);
 
-        Double amount = 500.0;
-        assertThrows(NotEnoughBalance.class, () -> application.doWithdrawal(account, amount));
+        Cash euro = new Euro(500.0, "European Union");
+        assertThrows(NotEnoughBalance.class, () -> application.doWithdrawal(account, euro));
     }
 
 
@@ -135,7 +146,8 @@ public class BankingApplicationTest {
      * @param elems elements whose presence in the list is to be tested.
      * @return true if the list contains the specified element.
      */
-    private <T> boolean contains(List<T> list, T... elems) {
+    private <T> boolean contains(List<T> list, @SuppressWarnings("unchecked") T... elems) {
         return Arrays.stream(elems).allMatch(list::contains);
     }
 }
+
