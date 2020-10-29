@@ -1,6 +1,8 @@
 package com.bank;
 
 import com.bank.exceptions.NotEnoughBalance;
+import com.bank.model.Account;
+
 import utils.IdGenerator;
 
 import java.util.ArrayList;
