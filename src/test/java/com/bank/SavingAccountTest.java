@@ -2,9 +2,13 @@ package com.bank;
 
 import org.junit.jupiter.api.Test;
 
-import com.bank.model.Account;
-import com.bank.model.Cash;
-import com.bank.model.Dolar;
+import com.bank.model.accounts.Account;
+import com.bank.model.accounts.SavingAccount;
+import com.bank.model.cash.Cash;
+import com.bank.model.cash.Dolar;
+import com.bank.model.cash.Peso;
+
+import utils.IdGenerator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -12,9 +16,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import java.util.Arrays;
 import java.util.List;
 
-public class AccountTest {
-
-    private final Account account = new Account(1, "Kirito");
+public class SavingAccountTest {
+	private Cash peso = new Peso(0.0, "Argentina");
+    private final Account account = new SavingAccount(new IdGenerator().nextId(), "Kirito", peso, "Argentina");
 
     @Test
     public void whenAccountPropertiesAreRequiredItReturnsItsValuesCorrectly() {
@@ -51,5 +55,4 @@ public class AccountTest {
         assertEquals(expectedBalance.get(0).getValue(), account.searchRequiredCash(dolar).getValue());
         assertEquals(expectedPreviousTransaction, account.previousTransaction());
     }
-
 }

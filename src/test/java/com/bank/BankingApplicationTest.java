@@ -13,21 +13,33 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.bank.exceptions.NotEnoughBalance;
-import com.bank.model.Account;
-import com.bank.model.Cash;
-import com.bank.model.Dolar;
-import com.bank.model.Euro;
+import com.bank.model.accounts.Account;
+import com.bank.model.accounts.SavingAccount;
+import com.bank.model.cash.Cash;
+import com.bank.model.cash.Dolar;
+import com.bank.model.cash.Euro;
+import com.bank.model.cash.Peso;
+
+import utils.IdGenerator;
 
 public class BankingApplicationTest {
     private BankingApplication application;
     private String kiritoCustomerName;
     private String asunaCustomerName;
+    private Cash peso;
+    private Account account1;
+    private Account account2;
+    private IdGenerator idGenerator;
 
     @BeforeEach
     public void setUp() {
         application = new BankingApplication();
         kiritoCustomerName = "Kirito";
         asunaCustomerName = "Asuna";
+        idGenerator = new IdGenerator();
+        peso = new Peso(0.0, "Argentina");
+        account1 = new SavingAccount(idGenerator.nextId(), kiritoCustomerName, peso, "Argentina");
+        account2 = new SavingAccount(idGenerator.nextId(), asunaCustomerName, peso, "Brasil");
     }
 
     @Test
@@ -38,29 +50,29 @@ public class BankingApplicationTest {
     @Test
     public void whenAPersonRegistersAnAccountTheApplicationCreatesItCorrectlyAndReturnsItsId() {
         Integer expectedId = 1;
-        Integer actualId = application.register(kiritoCustomerName);
+		Integer actualId = application.register(account1);
 
         assertEquals(expectedId, actualId);
     }
 
     @Test
     public void whenAPersonRegistersAnAccountTheApplicationRegistersItCorrectly() {
-        application.register(kiritoCustomerName);
+        application.register(account1);
 
         assertFalse(isEmpty(application.accounts()));
     }
 
     @Test
     public void whenTwoPersonsRegistersAccountsTheApplicationCreatesItCorrectlyWithDifferentIds() {
-        Integer firstId = application.register(kiritoCustomerName);
-        Integer secondId = application.register(asunaCustomerName);
+        Integer firstId = application.register(account1);
+        Integer secondId = application.register(account2);
 
         assertNotEquals(firstId, secondId);
     }
 
     @Test
     public void whenAnAccountIsSearchedByIdTheApplicationFindsItAndReturnsItCorrectly() {
-        Integer newId = application.register(kiritoCustomerName);
+        Integer newId = application.register(account1);
         Cash cash = new Dolar(0.0, "United States");
         
         Integer expectedId = 1;
@@ -79,8 +91,8 @@ public class BankingApplicationTest {
 
     @Test
     public void whenTwoPersonsRegisterAccountsTheApplicationRegistersItCorrectly() {
-        Integer firstId = application.register(kiritoCustomerName);
-        Integer secondId = application.register(asunaCustomerName);
+        Integer firstId = application.register(account1);
+        Integer secondId = application.register(account2);
 
         Account firstAccount = application.findById(firstId);
         Account secondAccount = application.findById(secondId);
@@ -91,7 +103,7 @@ public class BankingApplicationTest {
 
     @Test
     public void whenAPersonDoesADepositTheApplicationUpdatesHisAccountCorrectly() {
-        Integer customerId = application.register(kiritoCustomerName);
+        Integer customerId = application.register(account1);
         Account account = application.findById(customerId);
 
         Cash dolar = new Dolar(1000.0, "United States");
@@ -104,7 +116,7 @@ public class BankingApplicationTest {
 
     @Test
     public void whenAPersonDoesAWithdrawalTheApplicationUpdatesHisAccountCorrectly() {
-        Integer customerId = application.register(kiritoCustomerName);
+        Integer customerId = application.register(account1);
         Account account = application.findById(customerId);
         Cash dolar = new Dolar(1000.0, "United States");
         application.doDeposit(account, dolar);
@@ -121,7 +133,7 @@ public class BankingApplicationTest {
 
     @Test
     public void whenAPersonTriesToDoAWithdrawalWhenHeHasNotEnoughMoneyInAccountTheApplicationUnablesIt() {
-        Integer customerId = application.register(kiritoCustomerName);
+        Integer customerId = application.register(account1);
         Account account = application.findById(customerId);
 
         Cash euro = new Euro(500.0, "European Union");
