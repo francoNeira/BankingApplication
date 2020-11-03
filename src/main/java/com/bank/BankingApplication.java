@@ -1,10 +1,14 @@
 package com.bank;
 
 import com.bank.exceptions.NotEnoughBalance;
+import com.bank.model.Account;
+import com.bank.model.Cash;
+
 import utils.IdGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class BankingApplication {
     private final List<Account> accounts;
@@ -34,8 +38,8 @@ public class BankingApplication {
     /**
      * Deposits the received amount in the specified account.
      */
-    public void doDeposit(Account account, Double amount) {
-        account.deposit(amount);
+    public void doDeposit(Account account, Cash cash) {
+        account.deposit(cash);
     }
 
     /**
@@ -43,10 +47,13 @@ public class BankingApplication {
      *
      * @throws NotEnoughBalance if account has not enought balance for the operation.
      */
-    public void doWithdrawal(Account account, Double amount) throws NotEnoughBalance {
-        if (accountHasNotEnoughBalance(account, amount))
-            throw new NotEnoughBalance();
-        account.withdraw(amount);
+    public void doWithdrawal(Account account, Cash cash) throws NotEnoughBalance {
+    	try {
+    		if (!accountHasNotEnoughBalance(account, cash))
+    			account.withdraw(cash);
+    	}catch(NoSuchElementException exception){
+    		throw new NotEnoughBalance();
+    	}
     }
 
     /**
@@ -65,7 +72,7 @@ public class BankingApplication {
      *
      * @return true if received amount is bigger that account's balance.
      */
-    private boolean accountHasNotEnoughBalance(Account account, Double amount) {
-        return account.balance() < amount;
+    private boolean accountHasNotEnoughBalance(Account account, Cash cash) { 
+    		return account.searchRequiredCash(cash).getValue() < cash.getValue();
     }
 }
